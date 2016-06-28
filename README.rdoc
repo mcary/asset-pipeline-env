@@ -1,28 +1,34 @@
-== README
+== Using Environment Variables from Asset Pipeline
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+=== The Problem
 
-Things you may want to cover:
+Twelve-Factor suggests using environment variables as a language-neutral
+mechanism for infrastructure to inject per-environment configuration into an
+application.
 
-* Ruby version
+Using these configuration variables in server-side code is a simple matter of
+`ENV.fetch`.  But we also sometimes need it in Javascript code that runs on the client side.
 
-* System dependencies
+Fortunately, the Asset Pipeline allows adding a ".erb" suffix to assets to allow arbitrary ruby to contribute to the file contents.  So you can call `ENV.fetch` there.
 
-* Configuration
+Unfortunately, the Asset Pipeline caches compiled assets in a way that makes this difficult: an asset compiled with one environment setting will not be recompiled, even if you restart the server with a new environment setting.  Even in development mode.
 
-* Database creation
+=== Solution 1: Clear the cache
 
-* Database initialization
+One easy solution is to just clear the cache:
 
-* How to run the test suite
+    rake tmp:cache:clear
 
-* Services (job queues, cache servers, search engines, etc.)
+This is convenient for occasional use, but it may lead to confusion later if
+someone forgets to do it or doesn't know it's necessary.
 
-* Deployment instructions
+=== Solution 2: Use depend_on
 
-* ...
+Sprockets allows for a file to declare a dependency on another file's contents.
+Note: it depends on the contents, not the modification time.
 
+Just add this to your .js.erb file:
 
-Please feel free to use a different markup language if you do not plan to run
-<tt>rake doc:app</tt>.
+    <% depend_on(Rails.root + ".env") %>
+
+Now when your .env file changes, this asset will be recompiled.
