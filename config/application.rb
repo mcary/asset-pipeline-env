@@ -22,9 +22,5 @@ module AssetPipelineEnv
 
     # Do not swallow errors in after_commit/after_rollback callbacks.
     config.active_record.raise_in_transactional_callbacks = true
-
-    # SO: http://stackoverflow.com/questions/16970196/disable-sprockets-asset-caching-in-development
-    config.assets.cache_store = :null_store  # Disables the Asset cache
-    config.sass.cache = false  # Disable the SASS compiler cache
   end
 end
